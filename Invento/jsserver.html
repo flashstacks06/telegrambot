@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fetch Example</title>
+</head>
+<body>
+  <script>
+    fetch('/api/data')
+      .then(response => response.json())
+      .then(data => {
+        console.log(data.message);
+        // Puedes realizar acciones adicionales en JavaScript utilizando los datos recibidos desde Python
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  </script>
+</body>
+</html>

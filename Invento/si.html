@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Activar función en JavaScript desde Python</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        var socket = io();
+
+        socket.on('activar_funcion', function(data) {
+            // Obtener el valor de la nueva variable recibida
+            var valorVariable = data.valor;
+
+            // Lógica adicional con el valor de la variable si es necesario
+
+            // Activar la función con el valor de la variable
+            miFuncion(valorVariable);
+        });
+
+        function miFuncion(valor) {
+            // Código de la función a activar con el valor de la variable
+            console.log('Función activada con el valor: ' + valor);
+        }
+    </script>
+</head>
+<body>
+    <!-- Contenido HTML -->
+</body>
+</html>

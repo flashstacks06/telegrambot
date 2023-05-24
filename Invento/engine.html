@@ -1,0 +1,161 @@
+<html>
+<head lang="en">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #jfoot, #dfoot {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        #jfoot button, #dfoot button {
+            width: 100%;
+        }
+        #gfoot {
+            display: none;
+            background-color: rgba(61,133,198,0.25);
+            border-top: 1px solid #aaa;
+            padding: 3px;
+            text-align: center;
+        }
+        #download {
+            display: none;
+        }
+    </style>
+
+    <script src="engine.js"></script>
+    <script>
+        let edit, saveit= "";
+        let isEventRegistered = false;
+
+
+        function $(id) { return document.getElementById(id) }
+
+        //function onload() {
+        //    //console.log(demo)
+        //    let fnstr = demo.toString().split("\n");
+        //    //console.log(fnstr)
+        //    edit = ace.edit($("jbody"), {
+        //        mode: "ace/mode/javascript",
+        //        theme: "ace/theme/chrome",
+        //        selectionStyle: "text"
+        //        
+        //    });
+        //    edit.session.setTabSize(4);
+        //    edit.session.setUseSoftTabs(true);
+        //    edit.session.setValue(fnstr
+        //        .slice(1,fnstr.length - 1)
+        //        .map(l => l.replace("            ",""))
+        //        .join('\n'));
+        //}
+
+        function display_message(msg) {
+            //console.log(msg)
+            //Estos solo va poniendo en el gfoot lo que se está haciendo con la figura, slice, export etc
+            $('gfoot').innerText = msg ? Object.keys(msg).join(' - ') : '';
+            
+        }
+
+        function display_gcode(gcode) {
+            
+            const gcodesplit = gcode.split(";");
+
+            const [filamento, tiempo] = getLastAndPenultimateElements(gcodesplit);
+            
+            console.log(filamento); // Imprime filamento usado
+            console.log(tiempo); // Imprime tiempo
+
+            //Esto solo separa y deja los segundos solos
+            const splitText = tiempo.split(":");
+            if (splitText.length >= 2) {
+                const segundos = splitText[1].split("s")[0].trim();
+                console.log(segundos); // segundos solos
+            }
+
+            //Aqui despliega el gcode en el cuadro con etiqueta gbody
+
+            saveit = gcode;
+            display_message();
+            $('dfoot').style.display = 'block';
+            $('gfoot').style.display = '';
+        }
+
+        function run_code(filename) {
+
+            let code = `kiri.newEngine()
+                .setListener(display_message)
+                .load("${filename}")
+                .then(eng => eng.setProcess({
+                  sliceShells: 2,
+                  sliceFillSparse: 0.20,
+                  sliceTopLayers: 2,
+                  sliceBottomLayers: 2,
+                }))
+                .then(eng => eng.setDevice({
+                  gcodePre: ["M82", "M104 S220"],
+                  gcodePost: ["M107"]
+                }))
+                .then(eng => eng.slice())
+                .then(eng => eng.prepare())
+                .then(eng => eng.export())
+                .then(display_gcode);`;
+        
+            $('dfoot').style.display = 'none';
+            $('gfoot').style.display = 'block';
+            console.log(code)
+            eval(`(function(){${code}})()`);    //lo ejecuta como una funcion
+        }
+
+        function getLastAndPenultimateElements(array) {
+            const lastIndex = array.length - 1;
+            const penultimateIndex = lastIndex - 1;
+
+            if (lastIndex < 0) {
+                return []; // Retorna un arreglo vacío si el arreglo está vacío
+            } else if (penultimateIndex < 0) {
+                return [array[lastIndex]]; // Retorna el último elemento si solo hay un elemento en el arreglo
+            }
+
+            return [array[penultimateIndex], array[lastIndex]]; // Retorna un arreglo con el penúltimo y el último elemento
+        }
+
+        function handleFileSelection() {
+            const fileInput = document.getElementById('fileInput');
+
+            if (!isEventRegistered) {
+                fileInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    filename = file.name;
+                    console.log(filename);
+                    run_code(filename);
+                });
+                isEventRegistered = true;
+            }
+    
+            fileInput.click();
+        }
+        
+        function download() {
+            let blob = new Blob([saveit], {type: "octet/stream"});
+            let url  = window.URL.createObjectURL(blob);
+            $('download').innerHTML = `<a id="xo" href="${url}" download="sample.gcode"></a>`;
+            $('xo').click();
+        }
+    </script>
+</head>
+<body>
+
+    <div id="demo">
+        <div>
+            <input type="file" id="fileInput" accept=".stl" style="display: none;">
+            <button onclick="handleFileSelection()">Seleccionar archivo</button>
+            <div id="gfoot"></div>
+            <div id="dfoot"><button onclick="download()">download</button></div>
+        </div>
+    </div>
+    <a id="download"></a>
+</body>
+</html>

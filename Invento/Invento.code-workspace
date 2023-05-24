@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Invento",
+			"path": "."
+		},
+		{
+			"name": "grid-apps",
+			"path": "../grid-apps"
+		}
+	],
+	"settings": {}
+}
